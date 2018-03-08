@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block script %}
+    <script>
+    $(function () {
+                $('.captcha').click(function () {
+                    console.log('click');
+                    $.getJSON("/captcha/refresh/",
+                        function (result) {
+                            $('.captcha').attr('src', result['image_url']);
+                            $('#id_captcha_0').val(result['key']);
+                        })
+        });
+                $('#id_captcha_1').blur(function(){  // #id_captcha_1为输入框的id，当该输入框失去焦点是触发函数
+        json_data={
+            'response':$('#id_captcha_1').val(),  // 获取输入框和隐藏字段id_captcha_0的数值
+            'hashkey':$('#id_captcha_0').val()
+        }
+        $.getJSON('/ajax_val', json_data, function(data){ //ajax发送
+            $('#captcha_status').remove()
+            if(data['status']){ //status返回1为验证码正确， status返回0为验证码错误， 在输入框的后面写入提示信息
+                $('#id_captcha_1').after('<span id="captcha_status" style="color:blue">*验证码正确</span>')
+            }else{
+                 $('#id_captcha_1').after('<span id="captcha_status" style="color:red">*验证码错误</span>')
+            }
+        });
+
+    });
+    })
+    </script>
+{% endblock %}
+{% block title %}注册{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="col-md-4 col-md-offset-4">
+          <form class='form-register' action="/register/" method="post">
+
+              {% if message %}
+                  <div class="alert alert-warning">{{ message }}</div>
+              {% endif %}
+
+              {% csrf_token %}
+
+              <h2 class="text-center">欢迎注册</h2>
+              <div class="form-group">
+                  {{ register_form.username.label_tag }}
+                  {{ register_form.username}}
+              </div>
+              <div class="form-group">
+                  {{ register_form.password1.label_tag }}
+                  {{ register_form.password1 }}
+              </div>
+              <div class="form-group">
+                  {{ register_form.password2.label_tag }}
+                  {{ register_form.password2 }}
+              </div>
+              <div class="form-group">
+                  {{ register_form.email.label_tag }}
+                  {{ register_form.email }}
+              </div>
+              <div class="form-group">
+                  {{ register_form.sex.label_tag }}
+                  {{ register_form.sex }}
+              </div>
+              <div class="form-group">
+                  {{ register_form.captcha.errors }}
+                  {{ register_form.captcha.label_tag }}
+                  {{ register_form.captcha }}
+              </div>
+
+              <button type="reset" class="btn btn-default pull-left">重置</button>
+              <button type="submit" class="btn btn-primary pull-right">提交</button>
+
+          </form>
+        </div>
+    </div> <!-- /container -->
+{% endblock %}
